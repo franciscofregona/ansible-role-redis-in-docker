@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo "Start deploy script"
-
 # Some basic variables
 GIT_MAIL="rapacz.mateusz@gmail.com"
 GIT_USER="mateuszrapacz"
@@ -10,11 +8,8 @@ PROJECT=$(echo "$TRAVIS_REPO_SLUG" | awk -F '/' '{print $2}')
 GALAXY_URL="https://galaxy.ansible.com/${ORGANIZATION}/${PROJECT#ansible-}"
 
 # Git config
-echo "Configure git"
 git config --global user.email "${GIT_MAIL}"
 git config --global user.name "${GIT_USER}"
-
-echo "Configure git - remote origin url"
 GIT_URL=$(git config --get remote.origin.url)
 GIT_URL=${GIT_URL#*//}
 
