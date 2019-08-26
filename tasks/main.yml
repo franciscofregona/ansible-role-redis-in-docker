@@ -1,19 +1,31 @@
 ---
+- name: Redis | Ensure group "redis" exists
+  group:
+    name: redis
+    gid: 12345
+    state: present
+
+- name: Redis | Ensure group "redis" exists
+  user:
+    name: redis
+    uid: 12345
+    shell: /bin/nologin
+    state: present
 
 - name: Redis | Create config directory
   file:
     path: /redis/config
     state: directory
-    owner: "nobody"
-    group: "nogroup"
+    owner: redis
+    group: redis
     recurse: yes
 
 - name: Redis | Create persistence directory
   file:
     path: "{{ redis_persistence_path }}"
     state: directory
-    owner: "nobody"
-    group: "nogroup"
+    owner: redis
+    group: redis
     recurse: yes
   when: redis_persistence_enabled
 
@@ -27,8 +39,8 @@
   template:
     src: redis.conf.j2
     dest: /redis/config/redis.conf
-    owner: nobody
-    group: nogroup
+    owner: redis
+    group: redis
     mode: '0644'
 
 - name: Redis | Copy redis docker compose file
@@ -37,7 +49,7 @@
     dest: "{{ compose_files_path }}/redis/docker-compose.yml"
 
 - name: Redis | Run redis container
-  docker_service:
+  docker_compose:
     project_name: redis
     project_src: "{{ compose_files_path }}/redis"
 
@@ -55,7 +67,7 @@
         dest: "{{ compose_files_path }}/redis-exporter/docker-compose.yml"
 
     - name: Redis | Run redis-exporter container
-      docker_service:
+      docker_compose:
         project_name: redis-exporter
         project_src: "{{ compose_files_path }}/redis-exporter"
   when: redis_monitoring_enabled
