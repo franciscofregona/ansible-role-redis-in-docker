@@ -23,7 +23,7 @@ Example playbook usage:
    redis_password: "password"
    redis_persistence_enabled: true
    redis_persistence_path: "/redis/data"
-   compose_files_path: "/etc/compose-files"
+   redis_compose_files_path: "/etc/compose-files"
    ansible_become: yes
   roles:
     - geerlingguy.docker
