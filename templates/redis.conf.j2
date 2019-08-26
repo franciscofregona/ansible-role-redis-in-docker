@@ -1,0 +1,140 @@
+################################## INCLUDES ###################################
+
+# none
+
+################################ GENERAL  #####################################
+daemonize no
+
+# pidfile /var/run/redis.pid
+pidfile /var/run/redis.pid
+
+# accept port
+port {{ redis_port }}
+
+# TCP listen() backlog.
+tcp-backlog 511
+
+# bind address
+# bind 192.168.1.100 10.0.0.1
+# bind 127.0.0.1
+
+# Close the connection after a client is idle for N seconds (0 to disable)
+timeout 0
+
+# TCP keepalive.
+tcp-keepalive 0
+
+# Specify the server verbosity level.
+loglevel notice
+
+# Specify the log file name. Also the empty string can be used to force
+# Redis to log on the standard output. Note that if you use standard
+# output for logging but daemonize, logs will be sent to /dev/null
+#logfile /var/log/redis.log
+
+# Set the number of databases. The default database is DB 0, you can select
+# a different one on a per-connection basis using SELECT <dbid> where
+# dbid is a number between 0 and 'databases'-1
+databases 16
+
+################################ SNAPSHOTTING  ################################
+
+# Save the DB on disk:
+save 900 1
+save 300 10
+save 60 10000
+
+stop-writes-on-bgsave-error yes
+
+rdbcompression yes
+
+rdbchecksum yes
+
+# The filename where to dump the DB
+dbfilename RedisDB.rdb
+
+{% if redis_persistence_enabled %}
+# data dir
+dir /data/
+{% endif %}
+
+################################# REPLICATION #################################
+
+slave-serve-stale-data yes
+slave-read-only yes
+
+repl-disable-tcp-nodelay no
+
+repl-diskless-sync no
+repl-diskless-sync-delay 5
+
+slave-priority 100
+
+################################## SECURITY ###################################
+
+requirepass {{ redis_password }}
+
+################################### LIMITS ####################################
+
+# none
+
+############################## APPEND ONLY MODE ###############################
+
+appendonly no
+
+appendfilename redis_master.aof
+
+
+appendfsync everysec
+
+no-appendfsync-on-rewrite no
+
+auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64mb
+
+aof-load-truncated yes
+
+################################ REDIS CLUSTER  ###############################
+
+#none
+
+################################ LUA SCRIPTING  ###############################
+
+lua-time-limit 5000
+
+################################## SLOW LOG ###################################
+
+slowlog-log-slower-than 10000
+
+slowlog-max-len 128
+
+################################ LATENCY MONITOR ##############################
+
+latency-monitor-threshold 0
+
+############################# Event notification ##############################
+
+notify-keyspace-events ""
+
+############################### ADVANCED CONFIG ###############################
+
+hash-max-ziplist-entries 512
+hash-max-ziplist-value 64
+list-max-ziplist-entries 512
+list-max-ziplist-value 64
+
+set-max-intset-entries 512
+
+zset-max-ziplist-entries 128
+zset-max-ziplist-value 64
+
+hll-sparse-max-bytes 3000
+activerehashing no
+
+client-output-buffer-limit normal 0 0 0
+client-output-buffer-limit slave 256mb 64mb 60
+client-output-buffer-limit pubsub 32mb 8mb 60
+
+hz 10
+
+aof-rewrite-incremental-fsync yes

@@ -1,0 +1,61 @@
+---
+
+- name: Redis | Create config directory
+  file:
+    path: /redis/config
+    state: directory
+    owner: "nobody"
+    group: "nogroup"
+    recurse: yes
+
+- name: Redis | Create persistence directory
+  file:
+    path: "{{ redis_persistence_path }}"
+    state: directory
+    owner: "nobody"
+    group: "nogroup"
+    recurse: yes
+  when: redis_persistence_enabled
+
+- name: Redis | Create compose directory
+  file:
+    path: "{{ compose_files_path }}/redis"
+    state: directory
+    recurse: yes
+
+- name: Redis | Template configuration file for redis.conf
+  template:
+    src: redis.conf.j2
+    dest: /redis/config/redis.conf
+    owner: nobody
+    group: nogroup
+    mode: '0644'
+
+- name: Redis | Copy redis docker compose file
+  template:
+    src: redis-compose.yml.j2
+    dest: "{{ compose_files_path }}/redis/docker-compose.yml"
+
+- name: Redis | Run redis container
+  docker_service:
+    project_name: redis
+    project_src: "{{ compose_files_path }}/redis"
+
+- name: Redis | Enable component monitoring
+  block:
+    - name: Redis | Create exporter compose directory
+      file:
+        path: "{{ compose_files_path }}/redis-exporter"
+        state: directory
+        recurse: yes
+
+    - name: Redis | Copy redis-exporter docker compose file
+      template:
+        src: redis-exporter-compose.yml.j2
+        dest: "{{ compose_files_path }}/redis-exporter/docker-compose.yml"
+
+    - name: Redis | Run redis-exporter container
+      docker_service:
+        project_name: redis-exporter
+        project_src: "{{ compose_files_path }}/redis-exporter"
+  when: redis_monitoring_enabled

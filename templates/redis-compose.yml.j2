@@ -1,0 +1,13 @@
+version: '2.1'
+services:
+  orbital-redis:
+    image: redis:5.0.5-alpine
+    container_name: orbital-redis
+    restart: always
+    command: ["redis-server", "/config/redis.conf"]
+    network_mode: host
+    volumes:
+      - /redis/config:/config
+{% if redis_persistence_enabled %}
+      - {{ redis_persistence_path }}:/data
+{% endif %}

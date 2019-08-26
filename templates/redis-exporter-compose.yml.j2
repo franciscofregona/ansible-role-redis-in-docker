@@ -1,0 +1,10 @@
+version: '2.1'
+services:
+  orbital-redis-exporter:
+    image: oliver006/redis_exporter:v1.0.4
+    container_name: orbital-redis-exporter
+    restart: always
+    environment:
+      - REDIS_ADDR=localhost:{{ redis_port }}
+      - REDIS_PASSWORD={{ redis_password }}
+    network_mode: host
