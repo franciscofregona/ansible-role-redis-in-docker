@@ -1,8 +1,15 @@
 ---
 
-redis_monitoring_enabled: true
+redis_user: "redis"
+redis_group: "redis"
+redis_service_name: "redis"
+redis_image: "redis:5.0.5-alpine"
+redis_container_name: "redis"
 redis_port: 6379
 redis_password: ""
 redis_persistence_enabled: true
 redis_persistence_path: "/redis/data"
 redis_compose_files_path: "/etc/compose-files"
+
+redis_monitoring_enabled: true
+redis_exporter_image: "oliver006/redis_exporter:v1.0.4"
