@@ -6,9 +6,11 @@ redis_service_name: "redis"
 redis_image: "redis:5.0.5-alpine"
 redis_container_name: "redis"
 redis_port: 6379
+redis_bind: "0.0.0.0"
 redis_password: ""
 redis_persistence_enabled: true
 redis_persistence_path: "/redis/data"
+redis_protected_mode: "no"
 redis_compose_files_path: "/etc/compose-files"
 
 redis_monitoring_enabled: true
