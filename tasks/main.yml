@@ -40,6 +40,7 @@
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     mode: '0644'
+  register: redis_conf
 
 - name: Redis | Copy redis docker compose file
   template:
@@ -50,6 +51,7 @@
   docker_compose:
     project_name: redis
     project_src: "{{ redis_compose_files_path }}/redis"
+    restarted: "{{ redis_conf.changed }}"
 
 - name: Redis | Enable component monitoring
   block:
