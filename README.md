@@ -1,5 +1,7 @@
-[![Build Status](https://travis-ci.org/novomatic-tech/ansible-role-redis-in-docker.svg?branch=master)](https://travis-ci.org/novomatic-tech/ansible-role-redis-in-docker) [![License](https://img.shields.io/badge/license-Apache%202-green.svg)](https://github.com/novomatic-tech/ansible-role-redis-in-docker/blob/master/LICENSE) [![Ansible Role Name](https://img.shields.io/ansible/role/42968.svg)](https://galaxy.ansible.com/novomatic-tech/redis_in_docker) [![Ansible Role counter](https://img.shields.io/ansible/role/d/42968.svg)](https://galaxy.ansible.com/novomatic-tech/redis_in_docker)
 # ansible-role-redis-in-docker
+
+Forked from novomatic-tech/ansible-role-redis-in-docker to create a cluster of containers for the Redis service.
+
 A role to install and configure the Redis base on official containers and some community containers.
 The role is used in our organization for different testing purposes and demo environments.
 
