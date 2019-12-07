@@ -1,17 +1,17 @@
 ---
-
 redis_user: "redis"
 redis_group: "redis"
 redis_service_name: "redis"
-redis_image: "redis:5.0.5-alpine"
-redis_container_name: "redis"
+redis_image: "redis:5.0.7"
 redis_port: 6379
-redis_bind: "0.0.0.0"
-redis_password: ""
+#Set persistence to yes if done in the config file.
 redis_persistence_enabled: true
 redis_persistence_path: "/redis/data"
-redis_protected_mode: "no"
-redis_compose_files_path: "/etc/compose-files"
 
-redis_monitoring_enabled: true
-redis_exporter_image: "oliver006/redis_exporter:v1.0.4"
+#Number of total containers to set up
+#Need 6 to have 3 masters and 1 replica for each one.
+redis_no_containers: 6
+#Number of "copies" for every master node.
+redis_no_replicas: 1
+redis_config_file: "/redis/config/redis.conf"
+redis_network_name: "redisnet"

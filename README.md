@@ -20,12 +20,9 @@ Example playbook usage:
 ```
 - hosts: ubuntu18
   vars:
-   redis_monitoring_enabled: true
    redis_port: 6379
-   redis_password: "password"
    redis_persistence_enabled: true
    redis_persistence_path: "/redis/data"
-   redis_compose_files_path: "/etc/compose-files"
    ansible_become: yes
   roles:
     - geerlingguy.docker
@@ -40,5 +37,6 @@ Apache 2.0
 Author Information
 ------------------
 
-This role was created in 2019 for the purposes of Novomatic Technologies Poland.
+The original role was created in 2019 for the purposes of Novomatic Technologies Poland.
 
+Modified for a technical test by [Francisco Fregona](franciscofregona@gmail.com).

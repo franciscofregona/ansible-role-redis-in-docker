@@ -27,47 +27,82 @@
     recurse: yes
   when: redis_persistence_enabled
 
-- name: Redis | Create compose directory
-  file:
-    path: "{{ redis_compose_files_path }}/redis"
-    state: directory
-    recurse: yes
-
 - name: Redis | Template configuration file for redis config
   template:
     src: redis.conf.j2
-    dest: /redis/config/redis.conf
+    dest: "{{redis_config_file}}"
     owner: "{{ redis_user }}"
     group: "{{ redis_group }}"
     mode: '0644'
   register: redis_conf
 
-- name: Redis | Copy redis docker compose file
-  template:
-    src: redis-compose.yml.j2
-    dest: "{{ redis_compose_files_path }}/redis/docker-compose.yml"
+- name: Redis | Create persistence directories for each container
+  file:
+    path: "{{redis_persistence_path}}/{{ 'redis%02x' | format(item) }}"
+    state: directory
+  loop: "{{ range(redis_no_containers)|list }}"
+  when: "{{redis_persistence_enabled}}"
 
-- name: Redis | Run redis container
-  docker_compose:
-    project_name: redis
-    project_src: "{{ redis_compose_files_path }}/redis"
-    restarted: "{{ redis_conf.changed }}"
+- name: Redis | Create the redis network
+  docker_network:
+    name: "{{ redis_network_name }}"
 
-- name: Redis | Enable component monitoring
-  block:
-    - name: Redis | Create exporter compose directory
-      file:
-        path: "{{ redis_compose_files_path }}/redis-exporter"
-        state: directory
-        recurse: yes
+- name: Redis | Run redis container(s) with no persistence
+  docker_container:
+    name: "{{ 'redis%02x' | format(item) }}"
+    image: "{{ redis_image }}"
+    command:  redis-server /redis.conf
+    state: started
+    recreate: yes
+    exposed_ports:
+      - 6379
+    volumes:
+      - "{{redis_config_file}}:/redis.conf"
+    networks:
+      - name: "{{ redis_network_name }}"
+  loop: "{{ range(redis_no_containers)|list }}"
+  when: not {{redis_persistence_enabled}}
 
-    - name: Redis | Copy redis-exporter docker compose file
-      template:
-        src: redis-exporter-compose.yml.j2
-        dest: "{{ redis_compose_files_path }}/redis-exporter/docker-compose.yml"
+#When running with persistence on, an extra volume mount is needed.
+- name: Redis | Run redis container(s) with persistence
+  docker_container:
+    name: "{{ 'redis%02x' | format(item) }}"
+    image: "{{ redis_image }}"
+    command:  redis-server /redis.conf
+    state: started
+    recreate: yes
+    exposed_ports:
+      - 6379
+    volumes:
+      - "{{redis_config_file}}:/redis.conf"
+      - "{{redis_persistence_path}}/{{ 'redis%02x' | format(item) }}:/data"
+    networks:
+      - name: "{{ redis_network_name }}"
+  loop: "{{ range(redis_no_containers)|list }}"
+  when: "{{redis_persistence_enabled}}"
 
-    - name: Redis | Run redis-exporter container
-      docker_compose:
-        project_name: redis-exporter
-        project_src: "{{ redis_compose_files_path }}/redis-exporter"
-  when: redis_monitoring_enabled
+- name: Redis | Inspect the network for the IPs of the containers
+  command: docker network inspect {{redis_network_name}}
+  register: iplist
+  tags: debb
+
+- name: Redis | Parse the IPs of the containers
+  set_fact:
+    IPs: "{{ iplist.stdout | regex_findall('.*IPv4Address.*') | trim |  regex_findall('\\b(?:[0-9]{1,3}\\.){3}[0-9]{1,3}\\b') }}"
+  tags: debb
+
+- name: Redis | Add ports and concat the IPs for the join command.
+  set_fact:
+    IPsPorts: "{% for item in IPs %}{{item}}:{{redis_port}}{{ '' if loop.last else ' ' }}{% endfor %}"
+  tags: debb
+
+- name: DEBUG | Print the cluster creation command
+  debug:
+    msg: "docker exec -ti redis00 redis-cli --cluster create {{IPsPorts}} --cluster-replicas {{redis_no_replicas}} --cluster-yes"
+  tags: debb
+
+#If this command fails, probably it's because the files are already created and persisted.
+- name: Redis | Configure the cluster from first container
+  command: docker exec -ti redis00 redis-cli --cluster create {{IPsPorts}} --cluster-replicas {{redis_no_replicas}} --cluster-yes
+  tags: debb
+  ignore_errors: yes
