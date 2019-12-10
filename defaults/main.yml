@@ -4,6 +4,7 @@ redis_group: "redis"
 redis_service_name: "redis"
 redis_image: "redis:5.0.7"
 redis_port: "6379"
+
 #Set persistence to yes if done in the config file.
 redis_persistence_enabled: true
 redis_persistence_path: "/redis/data"

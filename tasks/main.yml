@@ -47,6 +47,11 @@
   docker_network:
     name: "{{ redis_network_name }}"
 
+- name: Redis | Pull the image we will need
+  docker_image:
+    name: "{{ redis_image }}"
+    source: pull
+
 - name: Redis | Run redis container(s) with no persistence
   docker_container:
     name: "{{ 'redis%02x' | format(item) }}"
@@ -63,12 +68,6 @@
   loop: "{{ range(redis_no_containers)|list }}"
   when: not {{redis_persistence_enabled}}
 
-- name: Redis | Pull the image we will need
-  docker_image:
-    name: "{{ redis_image }}"
-    source: pull
-
-#When running with persistence on, an extra volume mount is needed.
 - name: Redis | Run redis container(s) with persistence
   docker_container:
     name: "{{ 'redis%02x' | format(item) }}"
